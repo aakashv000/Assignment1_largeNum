@@ -1,0 +1,102 @@
+#include<iostream>
+#include<stdio.h>
+#include<stdlib.h>
+using namespace std;
+
+typedef struct Node{
+	int data;
+	struct Node *next=NULL;
+	struct Node *prev=NULL;
+}List;
+
+List* maker(List *head,int val){
+
+	List *new_node = new List;
+	new_node->data=val;	
+	
+	if(head==NULL) head=new_node;
+	else{
+		List *curr=head;
+		while(curr->next!=NULL){
+			curr=curr->next;		
+		}
+		curr->next=new_node;
+		new_node->prev=curr;
+	}
+	head->prev=new_node;
+	return head;
+}
+List* rmaker(List *head,int val){
+
+	List *new_node = new List;
+	new_node->data=val;	
+	
+	if(head==NULL) head=new_node;
+	else{
+		List *curr=head;
+		while(curr->prev!=NULL){
+			curr=curr->prev;		
+		}
+		curr->prev=new_node;
+		new_node->next=curr;
+	}
+	head->next=new_node;
+	return head;
+}
+
+void print(List *head){
+	List *temp=head;	
+	while(1){
+		cout << temp->data;
+		temp=temp->next;
+		if(temp==head) break;	
+	}
+}
+
+List* add(List *sumHead,List *head1,List *head2,List *l1,List *l2,int c,int key){
+	if(key==0){
+		sumHead=rmaker(sumHead,(l1->data+l2->data+c)%10);
+		sumHead=add(sumHead,head1,head2,l1->prev,l2->prev,(l1->data+l2->data+c)/10,1);	
+	}
+	else{
+		if(l1!=head1->prev && l2!=head2->prev){
+			sumHead=rmaker(sumHead,(l1->data+l2->data+c)%10);
+			sumHead=add(sumHead,head1,head2,l1->prev,l2->prev,(l1->data+l2->data+c)/10,1);		
+		}
+		else if(l1!=head1->prev && l2==head2->prev){
+			sumHead=rmaker(sumHead,(l1->data+c)%10);
+			sumHead=add(sumHead,head1,head2,l1->prev,l2,(l1->data+c)/10,1);
+		}
+		else if(l1==head1->prev && l2!=head2->prev){
+			sumHead=rmaker(sumHead,(l2->data+c)%10);
+			sumHead=add(sumHead,head1,head2,l1,l2->prev,(l2->data+c)/10,1);
+		}
+		else{
+			if(c!=0) sumHead=rmaker(sumHead,c);
+			else return sumHead;		
+		}
+	}
+	return sumHead;
+	
+}
+
+int main(){
+	List *head1=NULL,*head2=NULL;
+	while(1){
+		int temp = getchar();
+		if(temp==10) {head1->prev->next=head1;break;}//directly pressing enter will break it
+		else head1=maker(head1,temp-'0');
+	}
+	while(1){
+		int temp = getchar();
+		if(temp==10){head2->prev->next=head2;break;}
+		else head2=maker(head2,temp-'0');
+	}
+	
+	List *sumHead=NULL;
+	sumHead=add(sumHead,head1,head2,head1->prev,head2->prev,0,0);
+	sumHead->next->prev=sumHead;
+	sumHead=sumHead->next;
+	
+	print(sumHead);
+}
