@@ -5,6 +5,7 @@ using namespace std;
 
 typedef struct Node{
 	int data;
+	int index;
 	struct Node *next=NULL;
 	struct Node *prev=NULL;
 }List;
@@ -14,7 +15,7 @@ List* maker(List *head,int val){
 	List *new_node = new List;
 	new_node->data=val;	
 	
-	if(head==NULL) head=new_node;
+	if(head==NULL) {new_node->index=0;head=new_node;}
 	else{
 		List *curr=head;
 		while(curr->next!=NULL){
@@ -22,6 +23,7 @@ List* maker(List *head,int val){
 		}
 		curr->next=new_node;
 		new_node->prev=curr;
+		new_node->index=curr->index+1;
 	}
 	head->prev=new_node;
 	return head;
@@ -31,7 +33,7 @@ List* rmaker(List *head,int val){
 	List *new_node = new List;
 	new_node->data=val;	
 	
-	if(head==NULL) head=new_node;
+	if(head==NULL) {new_node->index=0;head=new_node;}
 	else{
 		List *curr=head;
 		while(curr->prev!=NULL){
@@ -39,6 +41,7 @@ List* rmaker(List *head,int val){
 		}
 		curr->prev=new_node;
 		new_node->next=curr;
+		new_node->index=curr->index+1;
 	}
 	head->next=new_node;
 	return head;
@@ -51,6 +54,63 @@ void print(List *head){
 		temp=temp->next;
 		if(temp==head) break;	
 	}
+}
+
+List* mul(List *mulHead,List *head1,List *head2){
+	List *tempB,*tempS;	
+	if(head1->prev->index >= head2->prev->index){
+		tempB=head1->prev;
+		tempS=head2->prev;
+	}
+	else {
+		tempB=head2->prev;
+		tempS=head1->prev;		
+	}
+	int lenB=tempB->index;
+	int lenS=tempS->index;	
+	List *multi=tempS;
+	while(1){
+		List *curr=tempB;
+		while(1){
+			int tval=multi->data * curr->data;
+			int ind= (lenS - multi->index)+(lenB - curr->index);
+			int key=0;		
+			List *temp=mulHead;		
+			while(1){
+				if(mulHead==NULL) break;			
+				if(ind==temp->index){
+					temp->data=temp->data+tval;
+					key=1;			
+				}
+				temp=temp->prev;
+				if(temp==NULL) break;
+			}
+			if(key==0){
+				mulHead=rmaker(mulHead,tval);
+			}
+			curr=curr->prev;
+			if(curr==tempB) break;
+		}
+		multi=multi->prev;
+		if(multi==tempS) break;
+	}
+
+
+	List *checker=mulHead->prev;
+	int carry = mulHead->data / 10;
+	mulHead->data=mulHead->data % 10;
+	while(checker!=NULL){
+		int rem=(checker->data + carry)/10;		
+		checker->data=(checker->data + carry)%10;
+		carry=rem;		
+		checker=checker->prev;
+	}
+	if(carry<10&&carry!=0) mulHead=rmaker(mulHead,carry);
+	if(carry>10){mulHead=rmaker(mulHead,carry%10);mulHead=rmaker(mulHead,carry/10);}	
+
+
+
+	return mulHead;
 }
 
 List* add(List *sumHead,List *head1,List *head2,List *l1,List *l2,int c,int key){
@@ -98,5 +158,16 @@ int main(){
 	sumHead->next->prev=sumHead;
 	sumHead=sumHead->next;
 	
+	List *mulHead=NULL;
+	mulHead=mul(mulHead,head1,head2);
+	mulHead->next->prev=mulHead;
+	mulHead=mulHead->next;
+	
+	cout<<"The sum is: ";	
 	print(sumHead);
+	cout<<endl;
+	cout<<"The product is: ";
+	print(mulHead);
+	cout<<endl;
+
 }
